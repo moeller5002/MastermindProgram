@@ -12,3 +12,8 @@ http://mercury.webster.edu/aleshunas/Support%20Materials/Analysis/Dowelll%20-%20
 
 NOTES:
 This is only my second project in Python so I am aware that many things could have been done better. My variable naming is especially poor but I may go back and fix it once I get the chance.
+
+
+
+
+UPDATED 03/29/2022
