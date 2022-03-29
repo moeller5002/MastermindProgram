@@ -1,5 +1,5 @@
 # MastermindProgram
-Code to play and solve the code breaking game Mastermind.
+Code to play and solve the code breaking game Mastermind. Traditional Mastermind is a code of length 4 chosen from 6 different colors, I've added functionality to change these parameters.
 
 Have 4 main algorithms coded
 1. Random Guess
