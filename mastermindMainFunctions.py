@@ -89,7 +89,7 @@ def getOutput(posGuesses):
         except ValueError: 
             print("--Try again--")
     
-    given_output = [numW, numR]
+    given_output = [numR, numW]
     
     return given_output
         
