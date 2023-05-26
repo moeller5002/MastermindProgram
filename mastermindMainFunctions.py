@@ -71,15 +71,6 @@ def getOutput(posGuesses):
     numW = None
     numR = None
     
-    while numW not in posResponses:
-        try:
-            numW = int(input("How many white pegs in response? "))
-            if numW not in posResponses:
-                print("--Try again--")
-                
-        except ValueError: 
-            print("--Try again--")
-        
     while numR not in posResponses:
         try:
             numR = int(input("How many red pegs in response? "))
@@ -88,6 +79,17 @@ def getOutput(posGuesses):
                 
         except ValueError: 
             print("--Try again--")
+    
+    
+    while numW not in posResponses:
+        try:
+            numW = int(input("How many white pegs in response? "))
+            if numW not in posResponses:
+                print("--Try again--")
+                
+        except ValueError: 
+            print("--Try again--")
+    
     
     given_output = [numR, numW]
     
@@ -110,7 +112,7 @@ def getHelpYN():
 
 def getAlgorithmCode():
     algorithmCode = None
-    posAlgorithmCodes = [1, 2, 3, 4, 5, 6, 7]
+    posAlgorithmCodes = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     
     print('Choose which Algorithm to use! ', '\n')
     print(' Algorithm 1: Random guess from remaining', '\n',
@@ -123,6 +125,9 @@ def getAlgorithmCode():
          
           'Algorithm 6: MaxEntropy with posAnswers', '\n',
           'Algorithm 7: MaxEntropy with posGuesses', '\n',
+          
+          'Algorithm 8: MiniMax with posAnswers', '\n',
+          'Algorithm 9: MiniMax with posGuesses', '\n',
           )
     
     while algorithmCode not in posAlgorithmCodes:
@@ -167,6 +172,10 @@ def suggestedCode(posGuesses, posAnswers, color_list, algorithm, num_guesses):
             suggested_stats = max_entropy(posAnswers, posAnswers, color_list, 0) 
         elif algorithm == 7:
             suggested_stats = max_entropy(posGuesses, posAnswers, color_list, 0) 
+        elif algorithm == 8: 
+            suggested_stats = MiniMax(posAnswers, posAnswers, color_list, 0) 
+        elif algorithm == 9:
+            suggested_stats = MiniMax(posGuesses, posAnswers, color_list, 0) 
         else:
             print('---Error: Invalid algorithm code---')
     
@@ -205,10 +214,13 @@ def filter_posAnswers(guessed, output, posAnswers, colorList):
     
     for i in posAnswers:
         if output == outputGenerator(guessed, i, colorList):
+
             posAnswers_updated.append(i)
             
     return posAnswers_updated
      
+
+
 
 
 
@@ -304,7 +316,7 @@ def random_guess(list):
     return guess
 
 
-#Max parts is essentially max_entropy but we dont care about frequency of each output
+'''What guess will give us the most number of unique responses?'''
 def max_parts(posGuesses, posAnswers, color_list, printYN):
     maxParts = 0
     bestCode = ''
@@ -377,7 +389,7 @@ def average_elim(posGuesses, posAnswers, color_list, printYN):
 
 
 
-
+'''Another waay of analyzing the same data. What guess will cut our answers in half the most amount of times?'''
 def max_entropy(posGuesses, posAnswers, color_list, printYN):
     maxExpEntropy = 0
     bestCode = ''
@@ -418,6 +430,64 @@ def max_entropy(posGuesses, posAnswers, color_list, printYN):
     return bestCode, maxExpEntropy
 
 
+'Try to minimize the maximum possible words remaining after this guess'
+def MiniMax(posGuesses, posAnswers, color_list, printYN):
+    minimizeMe = 1000000000000
+    bestCountOfOutputs = [0, 1000000000000]
+    bestCode = ''
+    locator = 0
+    L = len(posAnswers)
+    
+    for guessed_code in posGuesses:
+        distinctOutputs = []
+        countOfOutputs = []
+        locator += 1
+        
+        for checked_code in posAnswers:
+            output = outputGenerator(guessed_code, checked_code, color_list)
+            
+            if output in distinctOutputs:
+                countOfOutputs[distinctOutputs.index(output)] += 1
+            else: distinctOutputs.append(output), countOfOutputs.append(1)        
+        
+        if printYN == 1:
+            print('Code No. ', locator, ' was ', guessed_code, ' countOfOutputs: ', countOfOutputs)
+
+
+        ###MiniMax
+        maxNumberOfRemainingCodes = max(countOfOutputs)
+        bestCountOfOutputsSorted = sorted(bestCountOfOutputs)
+        countOfOutputsSorted = sorted(countOfOutputs)
+       
+        if (countOfOutputsSorted == bestCountOfOutputsSorted) and (bestCode not in posAnswers) and (guessed_code in posAnswers):
+            minimizeMe = maxNumberOfRemainingCodes
+            bestCountOfOutputs = countOfOutputs
+            bestCode = guessed_code
+        else:
+            'If the worst case scenarios are equal, look at the 2nd worse scenarios, 3rd case...'
+            maxDepthCompare = min(len(bestCountOfOutputs), len(countOfOutputs))
+
+            for i in range(1, maxDepthCompare):
+                'sorted(countOfOutputs)[-i] is iTh largest value in a list'
+                if countOfOutputsSorted[-i] < bestCountOfOutputsSorted[-i]:
+                    'print("Old best: ", sorted(bestCountOfOutputs), "  New best: ", sorted(countOfOutputs))'
+                    minimizeMe = maxNumberOfRemainingCodes
+                    bestCountOfOutputs = countOfOutputs
+                    bestCode = guessed_code
+                    break
+                elif  countOfOutputsSorted[-i] > bestCountOfOutputsSorted[-i]:
+                    break
+        ###
+
+    return bestCode, minimizeMe
+
+
+
+
+
+
+'''Algorithm testing and stat summries'''
+
 
 ##All the real algorithms rely on the same data, can combine all 3 so only have to do comparisons once
 ##Use this for autobestFirstGuess() in mastermindTesting. Greatly reduces computation time
@@ -431,8 +501,13 @@ def comboAlgorithm(posGuesses, posAnswers, color_list, printYN):
     maxExpEntropy = 0
     bestCodeEnt = ''
     
+    minimizeMe = 1000000000000
+    bestCodeMiniMax = ''
+    bestCountOfOutputs = [0, 1000000000000]
+    
     locator = 0
     L = len(posAnswers)
+    
     
     for guessed_code in posGuesses:
         distinctOutputs = []
@@ -487,19 +562,49 @@ def comboAlgorithm(posGuesses, posAnswers, color_list, printYN):
             maxExpEntropy = totalEntropy
             bestCodeEnt = guessed_code 
         ###
-            
+        
+        
+        ###MiniMax
+        maxNumberOfRemainingCodes = max(countOfOutputs)
+        bestCountOfOutputsSorted = sorted(bestCountOfOutputs)
+        countOfOutputsSorted = sorted(countOfOutputs)
+       
+        if (countOfOutputsSorted == bestCountOfOutputsSorted) and (bestCodeMiniMax not in posAnswers) and (guessed_code in posAnswers):
+            minimizeMe = maxNumberOfRemainingCodes
+            bestCountOfOutputs = countOfOutputs
+            bestCodeMiniMax = guessed_code
+        else:
+            'If the worst case scenarios are equal, look at the 2nd worse scenarios, 3rd case...'
+            maxDepthCompare = min(len(bestCountOfOutputs), len(countOfOutputs))
+
+            for i in range(1, maxDepthCompare):
+                'sorted(countOfOutputs)[-i] is iTh largest value in a list'
+                if countOfOutputsSorted[-i] < bestCountOfOutputsSorted[-i]:
+                    'print("Old best: ", sorted(bestCountOfOutputs), "  New best: ", sorted(countOfOutputs))'
+                    minimizeMe = maxNumberOfRemainingCodes
+                    bestCountOfOutputs = countOfOutputs
+                    bestCodeMiniMax = guessed_code
+                    break
+                elif  countOfOutputsSorted[-i] > bestCountOfOutputsSorted[-i]:
+                    break
+        ###
+        
+        
         if printYN == 1:
             print('Code No. ', locator, ' was ', guessed_code, ' Partitions: ', partitions, 
-                  ' ElimFactor: ', elimFactor,' Entropy: ', maxExpEntropy)
-    
-    wholeCell = [[bestCodeParts, maxParts], [bestCodeElim, bestElimFactor], [bestCodeEnt, maxExpEntropy]]
+                  ' ElimFactor: ', elimFactor,' Entropy: ', maxExpEntropy, ' MiniMax: ', minimizeMe)
+            
+            
+    wholeCell = [[bestCodeParts, maxParts], [bestCodeElim, bestElimFactor], [bestCodeEnt, maxExpEntropy], [bestCodeMiniMax, minimizeMe]]
     
     return wholeCell
 
 
 
 
-#Gives the quality of a guess by giving Entropy, Partitions, ElimFactor, extra stuff.
+
+
+#Gives the quality of a guess by giving Partitions, ElimFactor, Entropy, MiniMax extra stuff.
 #Can be called runprocedure() in mastermindTesting
 def giveGuessDist():
     
@@ -529,21 +634,25 @@ def giveGuessDist():
     print(countOfOutputs, '\n')
     
     
+    partitions = len(distinctOutputs)
+    
     ourSum = sum(countOfOutputs) #this is also just the length of posAnswers
-
     totalEntropy = 0
     for i in countOfOutputs:
         entropy = (i/ourSum)*math.log((ourSum/i), 2)
         totalEntropy += entropy
-        
-    partitions = len(distinctOutputs)
-    print('Parititions are ', partitions)
-    
-    print('Word was: ', guessed_code)
-    print('Entropy is ', totalEntropy)
     
     elimFactor = (sum(i*i for i in countOfOutputs)/(ourSum*ourSum))
+    
+    miniMax = max(countOfOutputs)
+    
+    
+    print('Word was: ', guessed_code)
+    print('Partitions are ', partitions)
     print('Elim Factor is ', elimFactor)
+    print('Entropy is ', totalEntropy)
+    print('MiniMax worst case scenario: ', miniMax)
+    
     
     return
 

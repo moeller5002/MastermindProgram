@@ -49,10 +49,12 @@ runProcedure()
 
 
 
+
+
 #Computes best first guess & its performance for each algorithm based on codeLength and numColors. An entire cell in the excel table    
-def autobestFirstGuess():
-    codeLength = getGameCodeLength()
-    numColors = getNumColors()
+def autobestFirstGuess(codeLength, numColors):
+    'codeLength = getGameCodeLength()'
+    'numColors = getNumColors()'
     
     
     codeLists, color_list = genCodeAndColorList(codeLength, numColors)
@@ -62,14 +64,19 @@ def autobestFirstGuess():
     
     start_time = time.perf_counter()
     
+    'For the first guess, aaaa and dddd will hve the same performance. No reason to test both'
+    'If sufficiently many letters ab and ac are the same too'
+    posGuesses = [x for x in posGuesses if (x.startswith('aa') or x.startswith('ab'))]
+    '***********************'
     
-    X = comboAlgorithm(posGuesses, posAnswers, color_list, 1)
+    
+    X = comboAlgorithm(posGuesses, posAnswers, color_list, 0)
     
     end_time = time.perf_counter()
     run_time = end_time - start_time
     
     print('\n', 'CodeLength: ', codeLength, ' NumColors: ', numColors)
-    print('Best Guess According to... MaxParts, AverageElim, MaxEntropy', '\n', X, '\n')
+    print('Best Guess According to... MaxParts, AverageElim, MaxEntropy, MiniMax', '\n', X, '\n')
     print('It took ', str(run_time/60), ' minutes to compute ', '\n')
     
     
@@ -78,5 +85,12 @@ def autobestFirstGuess():
     
 #autobestFirstGuess()
 
+def autoBestFirtGuess2():
+    for codeLength in range(5, 6):
+        for numColors in range (8, 9):
+            print('Hello')
+            autobestFirstGuess(codeLength, numColors)
+    
+    return 0
 
-
+#autoBestFirtGuess2()

@@ -27,8 +27,10 @@ def firstSuggestedCode(codeLength, color_list, algorithm):
         suggested_stats = entireCell[0]
     elif algorithm in [4,5]:
         suggested_stats = entireCell[1]
-    elif algorithm in [2,3]:
+    elif algorithm in [6,7]:
         suggested_stats = entireCell[2]
+    elif algorithm in [8,9]:
+        suggested_stats = entireCell[3]
     else: 
         return ValueError('Algorithm Code not Found')
     
@@ -41,6 +43,7 @@ def genCodeAndColorList(codeLength, numColors):
     if (numColors^codeLength > 300000): 
         return ValueError('OVERLOADED: Too big of list ')
     
+    #full_color_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k']
     full_color_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k']
     
     color_list = full_color_list[0:(numColors)]
@@ -55,5 +58,5 @@ def genCodeAndColorList(codeLength, numColors):
     return allCodesStr, color_list
 
 
-
+#print(genCodeAndColorList(6, 8))
 
